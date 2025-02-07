@@ -2,9 +2,8 @@ from setuptools import setup, find_packages
 
 setup(
     name='morecsv',
-    version='0.1.0',
-    author='Your Name',
-    author_email='your_email@example.com',
+    version='0.2.0',
+    author_email='unknownuserfrommars@protonmail.com',
     description='An enhanced CSV processing library',
     long_description=open('README.md').read(),
     long_description_content_type='text/markdown',

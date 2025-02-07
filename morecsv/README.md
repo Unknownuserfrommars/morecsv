@@ -93,3 +93,7 @@ file.save_data_multithreaded()
 ## 许可证
 
 本项目采用 [MIT 许可证](LICENSE)。
+
+## 更新日志
+
+- v0.2.0 Release: Minor bug fix; New functions
