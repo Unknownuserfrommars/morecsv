@@ -1,4 +1,5 @@
 ![PyPI - Version](https://img.shields.io/pypi/v/morecsv)
+![Monthly Downloads](https://img.shields.io/pypi/dm/morecsv.svg)
 ![License](https://img.shields.io/badge/License-MIT-yellow.svg)
 ![Python Version](https://img.shields.io/pypi/pyversions/morecsv)
 ![GitHub stars](https://badgen.net/github/stars/Unknownuserfrommars/morecsv)
