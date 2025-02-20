@@ -1,15 +1,60 @@
+# This part is where I list out all my brainstorming ideas and TODOs for the package. Some of them may never be implemented, but I'll keep them here for reference.
+# I PROBABLY won't remove my brainstorms and TODOs even if I finished them. I'll just mark them as DONE. -- Author
+
+# I don't know but maybe saving the data to the csv every time a change is made may not be quite a good idea.
+# For example, in loops, if we are adding a row in each iteration, then saving the data in each iteration is not a good idea. It costs too much time.
+# I may consider add an optional boolean parameter to the functions to save the data to the csv file or save to the self.data only.
+# This needs to be marked as a TODO. -- Author (**IMPORTANT**)
+
+# I might consider adding a log, to log the changes made to the csv file, starting from the reading of the file, adding columns, deleting columns, etc.
+# This will help in debugging and tracking the changes made to the csv file.
+# However, I am not sure where to store the log file. I think the default in C:\Users\username\morecsv\logs\morecsv.log is good.
+# But the user should be able to change the log file path, if they want to. We'll have to store the log file path in a string variable.
+# This marked as an optional TODO.
+# What I can do is to just print the logs to the console. -- Author
+
+# Currently, if you look at the source code, the data is stored as a pandas DataFrame, which may not be a good idea because this package is designed to work with csv files in an innovative way, so I may consider storing the data in some different ways.
+# I may consider storing the data as a list of lists, or a list of dictionaries, or a list of tuples, or a list of namedtuples, or a list of dataclasses, or a list of objects of a custom class.
+# I may consider adding an optional parameter to the class to store the data in different ways.
+# This marked as an optional TODO. -- Author
+
+# Wait, does `pd.read_csv()` (Current reading CSV function) supports web locations? If not, I may consider adding a function to read CSV files from the web.
+# I know Windows supports mapping network drives, so I may consider adding a function to read CSV files from network drives.
+# This marked as an optional TODO. -- Author
+
+# Should I add some simple data analysis/visualization functions to the package? I am not sure about this. I think it's a good idea to keep the package simple and focused on working with CSV files.
+# I may consider adding a function to plot the data in the DataFrame, but I am not sure about this. Matplotlib or Plotly does it well.
+# But I think, this package is designed to enhance the CSV builtin package in python, which doesn't have the ability (at least, i think so) to plot the data.
+# This marked as a TODO. -- Author
+
+# What's more, I think another important feature to add is the ability to read the data from the csv file in chunks. This is useful when working with large csv files.
+# I now have the function to save the csv file in chunks, but I don't have the function to read the csv file in chunks.
+# This marked as an optional TODO. -- Author
+
+# Whoa we need a read function to print the data as a pandas.DataFrame. This is important.
+# This is marked as a TODO. -- Author (**IMPORTANT**)
+
+# ABOVE ARE THE BRAINSTORMS DURING THE V0.3.0 DEVELOPMENT PERIOD.
+
+# Leave some space for further brainstorming and TODOs.
+
+# MAIN CODE BELOW ↓↓↓
+
 import csv
 import concurrent.futures
 import pandas as pd
 import numpy as np
 
 class CSVProcessor:
-    def __init__(self, file_path):
-        self.file_path = file_path
+    def __init__(self, file_path: str):
+        self.file_path: str = file_path
         self.data = pd.DataFrame()
-        self.is_empty:bool = False
+        self.is_empty: bool = False
 
     def _save_data(self):
+        """
+        Probably the most important function in the class. This function saves the data to the csv file.
+        """
         try:
             self.data.to_csv(self.file_path, index=False)
             print(f'Data saved to {self.file_path}')
@@ -182,4 +227,25 @@ class CSVProcessor:
         if len(new_column_name) != len(self.data.columns):
             raise ValueError("The length of the new column names list must match the number of existing columns.")
         self.data.columns = new_column_name
+        self._save_data()
+
+    def fill_column(self, column:str, fill_data:int|str|bool|float|list):
+        if not isinstance(fill_data, (int, str, bool, float, list)):
+            raise ValueError("Fill data must be an integer, string, boolean, or float.")
+        if isinstance(fill_data, list):
+            if len(fill_data) != len(self.data):
+                raise ValueError("Length of fill data list must match the number of rows in the DataFrame.")
+        if column not in self.data.columns:
+            raise ValueError(f"Column '{column}' not found.")
+        self.data[column] = fill_data
+        self._save_data()
+
+    def fillna(self, column, value):
+        """
+        Fill missing values in the DataFrame with a specified value.
+
+        :param column: The name of the column to fill missing values in.
+        :param value: The value to use for filling missing data.
+        """
+        self.data[column].fillna(value, inplace=True)
         self._save_data()

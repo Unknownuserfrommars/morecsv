@@ -37,6 +37,11 @@ file.del_columns('column_to_delete')
 file.save_data_multithreaded()
 ```
 
+### 填充NaN数据
+```python
+file.fillna('column', value=10)
+```
+
 ## 功能特性
 
 ### 自动数据类型处理
@@ -53,6 +58,8 @@ file.save_data_multithreaded()
 - 支持单线程和多线程保存数据到 CSV 文件，多线程保存可加快大文件的保存速度。
 
 ## API 文档
+
+###### This API Document is quite outdated. I need to major fix it before the v1.0.0 release. -- Author
 
 ### `CSVProcessor(file_path)`
 - **参数**：
@@ -96,4 +103,5 @@ file.save_data_multithreaded()
 
 ## 更新日志
 
-- v0.2.0 Release: Minor bug fix; New functions
+- v0.3.0 Release: Brainstorms (See source code and you'll know); New functions; Tiny bug fix.
+- v0.2.0 Release: Minor bug fix; New functions.

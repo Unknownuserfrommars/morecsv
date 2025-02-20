@@ -1,4 +1,5 @@
 # tests/test_morecsv.py
+# This is quite outdated too, I have to make sure I write a new one before the v1.0.0 release. -- Author
 import os
 import pandas as pd
 import pytest
