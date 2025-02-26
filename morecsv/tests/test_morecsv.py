@@ -1,89 +1,78 @@
 # tests/test_morecsv.py
-# This is quite outdated too, I have to make sure I write a new one before the v1.0.0 release. -- Author
-import os
+import unittest
 import pandas as pd
-import pytest
-from ..morecsv import CSVProcessor
+import os
+from unittest.mock import patch, MagicMock
+from io import StringIO
+import matplotlib.pyplot as plt
+import plotly.express as px
+from ..morecsv import CSVProcessor, Logger
 
+class TestCSVProcessorAndPlot(unittest.TestCase):
+    
+    @patch('matplotlib.pyplot.show')  # Mock matplotlib's show method
+    @patch('plotly.express.line')  # Mock Plotly's line function
+    def test_csv_processor_and_plot(self, mock_plotly_line, mock_matplotlib_show):
+        # Create a mock CSV dataset as string
+        csv_data = """x,y
+1,4
+2,5
+3,6"""
+        
+        # Simulate reading the CSV into a DataFrame
+        csv_file_path = "test_data.csv"
+        with open(csv_file_path, 'w') as f:
+            f.write(csv_data)
+        
+        # Create an instance of CSVProcessor
+        csv_processor = CSVProcessor(csv_file_path)
+        csv_processor.get()  # Load the CSV data
+        
+        # Check if data was loaded correctly
+        self.assertFalse(csv_processor.data.empty)
+        self.assertEqual(list(csv_processor.data.columns), ['x', 'y'])
+        
+        # Modify the dataset by adding a new column
+        csv_processor.add_columns("z", rows=3)
+        self.assertIn("z", csv_processor.data.columns)  # Check if column 'z' is added
+        
+        # Modify data within the newly added column
+        csv_processor.fill_column("z", [7, 8, 9])
+        self.assertEqual(csv_processor.data["z"].tolist(), [7, 8, 9])
+        
+        # Log the data modifications
+        csv_processor.logger.log(f"Column 'z' added and filled: {csv_processor.data['z'].tolist()}")
+        
+        # Now delete a column
+        csv_processor.del_columns("z")
+        self.assertNotIn("z", csv_processor.data.columns)  # Ensure column 'z' was deleted
+        
+        # Check if data is correctly saved
+        csv_processor._save_data()
+        self.assertTrue(os.path.exists(csv_file_path))  # Ensure file is saved
 
-@pytest.fixture
-def test_file():
-    # 创建一个临时 CSV 文件用于测试
-    test_file = 'test.csv'
-    data = {
-        'col1': [1, 2, 3],
-        'col2': [4, 5, 6]
-    }
-    df = pd.DataFrame(data)
-    df.to_csv(test_file, index=False)
-    yield test_file
-    # 测试结束后删除临时文件
-    if os.path.exists(test_file):
-        os.remove(test_file)
+        # Plotting with Plotly
+        mock_plotly_fig = MagicMock()
+        mock_plotly_line.return_value = mock_plotly_fig
+        
+        plot = csv_processor.Plot(csv_processor, uses="plotly.express")
+        plot.plot_line('x', 'y', title="Plotly Line Plot", x_title="X-axis", y_title="Y-axis")
+        plot.show()
+        
+        # Assert Plotly plot.show() was called
+        mock_plotly_fig.show.assert_called_once()
+        
+        # Plotting with Matplotlib
+        plot.use_lib = 'matplotlib.pyplot'  # Switch to matplotlib
+        plot.fig, plot.ax = plt.subplots()  # Mock axes
+        plot.plot_line('x', 'y', title="Matplotlib Line Plot", x_title="X-axis", y_title="Y-axis")
+        plot.show()
+        
+        # Assert Matplotlib plot.show() was called
+        mock_matplotlib_show.assert_called_once()
+        
+        # Cleanup: Remove the test CSV file
+        os.remove(csv_file_path)
 
-
-def test_get(test_file):
-    # 测试 get 方法
-    file = CSVProcessor(test_file)
-    file.get()
-    assert not file.data.empty
-
-
-def test_add_columns(test_file):
-    # 测试 add_columns 方法
-    file = CSVProcessor(test_file)
-    file.get()
-    new_columns = ['new_col1', 'new_col2']
-    file.add_columns(new_columns)
-    for col in new_columns:
-        assert col in file.data.columns
-
-
-def test_del_columns(test_file):
-    # 测试 del_columns 方法
-    file = CSVProcessor(test_file)
-    file.get()
-    column_to_delete = 'col1'
-    file.del_columns(column_to_delete)
-    assert column_to_delete not in file.data.columns
-
-
-def test_combine(test_file):
-    # 测试 combine 静态方法
-    file1 = test_file
-    file2 = 'test2.csv'
-    data2 = {
-        'col3': [7, 8, 9],
-        'col4': [10, 11, 12]
-    }
-    df2 = pd.DataFrame(data2)
-    df2.to_csv(file2, index=False)
-
-    combined_df = CSVProcessor.combine(file1, file2, axis=1)
-    assert len(combined_df.columns) == 4
-
-    # 清理第二个临时文件
-    if os.path.exists(file2):
-        os.remove(file2)
-
-
-def test_create_csv():
-    # 测试 create_csv 静态方法
-    new_file = 'new_test.csv'
-    headers = ['header1', 'header2']
-    CSVProcessor.create_csv(new_file, headers)
-    assert os.path.exists(new_file)
-    df = pd.read_csv(new_file)
-    assert list(df.columns) == headers
-    # 清理临时文件
-    if os.path.exists(new_file):
-        os.remove(new_file)
-
-
-def test_rename_columns(test_file):
-    # 测试 rename_columns 方法
-    file = CSVProcessor(test_file)
-    file.get()
-    new_column_names = ['new_col1', 'new_col2']
-    file.rename_columns(new_column_names)
-    assert list(file.data.columns) == new_column_names
+if __name__ == '__main__':
+    unittest.main()

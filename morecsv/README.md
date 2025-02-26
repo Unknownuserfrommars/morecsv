@@ -1,6 +1,7 @@
 # morecsv
 
 `morecsv` 是一个增强型的 CSV 处理库，旨在为用户提供更便捷、高效的 CSV 文件处理方式，支持自动数据类型处理、多线程读写、数据清洗等功能。
+同时，`morecsv` 也支持将数据画出来
 
 ## 安装
 
@@ -42,6 +43,13 @@ file.save_data_multithreaded()
 file.fillna('column', value=10)
 ```
 
+### 画图
+```python
+plot = Plot(file)
+plot.plot('x', 'y')
+plot.show()
+```
+
 ## 功能特性
 
 ### 自动数据类型处理
@@ -57,35 +65,12 @@ file.fillna('column', value=10)
 ### 数据保存
 - 支持单线程和多线程保存数据到 CSV 文件，多线程保存可加快大文件的保存速度。
 
+### 画图
+- 目前仅支持折线图，会在后续版本增加
+
 ## API 文档
 
-###### This API Document is quite outdated. I need to major fix it before the v1.0.0 release. -- Author
-
-### `CSVProcessor(file_path)`
-- **参数**：
-  - `file_path`：CSV 文件的路径。
-
-### `get(empty=False)`
-- **参数**：
-  - `empty`：布尔值，当文件为空时，若设置为 `True` 则继续处理，否则抛出异常。
-- **返回值**：无
-
-### `add_columns(column_name, rows=None, overwrite=False)`
-- **参数**：
-  - `column_name`：要添加的列名，可以是字符串或字符串列表。
-  - `rows`：可选参数，指定行数，默认为 `None`。当文件为空时，若未指定 `rows` 或 `rows` 小于 1，则默认行数为 1。
-  - `overwrite`：布尔值，是否覆盖已存在的列，默认为 `False`。
-- **返回值**：无
-
-### `del_columns(column_name)`
-- **参数**：
-  - `column_name`：要删除的列名，必须为字符串。
-- **返回值**：无
-
-### `save_data_multithreaded(chunksize=1000)`
-- **参数**：
-  - `chunksize`：每个数据块的行数，默认为 1000。
-- **返回值**：无
+### API 文档正在全面升级！~
 
 ## 贡献指南
 
@@ -100,8 +85,12 @@ file.fillna('column', value=10)
 ## 许可证
 
 本项目采用 [MIT 许可证](LICENSE)。
+If the superlink doesn't work, please see the GitHub repo.
 
 ## 更新日志
 
+- v0.4.0 Release: Logging implemented; Basic plotting class built-in main class; Tiny bug fix; Fixed the testings, for old tests please see older versions.
 - v0.3.0 Release: Brainstorms (See source code and you'll know); New functions; Tiny bug fix.
 - v0.2.0 Release: Minor bug fix; New functions.
+
+### I really should offer a full Chinese and full English version of this...

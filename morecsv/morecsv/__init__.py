@@ -1,4 +1,4 @@
 # morecsv/__init__.py
-from morecsv import CSVProcessor
+from morecsv import CSVProcessor, Logger
 
-__all__ = ['CSVProcessor']
+__all__ = ['CSVProcessor', 'Logger']
