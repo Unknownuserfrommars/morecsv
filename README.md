@@ -11,6 +11,7 @@
 ![CodeFactor Grade](https://www.codefactor.io/repository/github/Unknownuserfrommars/morecsv/badge)
 ![Language Count](https://img.shields.io/github/languages/count/Unknownuserfrommars/morecsv)
 ![Please Give Me a Star](https://img.shields.io/badge/Please-Give%20Me%20a%20Star-green)
+[![Crowdin](https://badges.crowdin.net/morecsv/localized.svg)](https://crowdin.com/project/morecsv)
 <br>
 `morecsv` 是一个增强型的 CSV 处理库，旨在为用户提供更便捷、高效的 CSV 文件处理方式，支持自动数据类型处理、多线程读写、数据清洗等功能。
 <hr>
