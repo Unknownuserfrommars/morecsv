@@ -51,6 +51,7 @@ import plotly.express as px
 import plotly.graph_objs as g_o
 import matplotlib.figure as fig
 import matplotlib.axes as ax
+import re
 
 class Logger:
     def __init__(self, log_path: str = None):
@@ -380,7 +381,80 @@ class CSVProcessor:
             return self.data.nunique()
         else:
             return self.data[column].nunique()
+    
+    # class Format:
+        # def __init__(self, csvprocessor:" CSVProcessor"):
+        #     """
+        #     :versionadded: X.Y.Z
+        #     """
+        #     self.data = csvprocessor.data
+        #     self.logger = csvprocessor.logger
+        #     self.none = csvprocessor.is_empty
         
+        # def format_column_name(self, columns: list = None):
+        #     try:
+        #         if self.none and self.data.empty:
+        #             raise ValueError("File is empty. Cannot format empty data.")
+        #         if columns is None:
+        #             cols = self.data.columns
+        #         else:
+        #             cols = columns
+        #         for col in cols:
+        #             col = col.lstrip().rstrip()
+        #             col = re.sub(r'\s+', '_', col)
+        #             col = col.replace(" ", "_").lower()
+        #             self.data.rename(columns={col: col}, inplace=True)
+        #         self.logger.log(f"Column names formatted.")
+        #     except Exception as e:
+        #         print(f"Error formatting column names: {e}")
+        #         self.logger.log(f"Error formatting column names: {e}")
+        
+        # def format_column(self, column:str, format:str):
+        #     if self.none and self.data.empty:
+        #         raise ValueError("File is empty. Cannot format empty data.")
+        #     if column not in self.data.columns:
+        #         raise ValueError(f"Column '{column}' not found.")
+        #     if format == 'title':
+        #         self.data[column] = self.data[column].str.title()
+        #     elif format == 'upper':
+        #         self.data[column] = self.data[column].str.upper()
+        #     elif format == 'lower':
+        #         self.data[column] = self.data[column].str.lower()
+        #     elif format == 'capitalize':
+        #         self.data[column] = self.data[column].str.capitalize()
+        #     elif format == 'swapcase':
+        #         self.data[column] = self.data[column].str.swapcase()
+        #     else:
+        #         raise ValueError("Invalid format. Use 'title', 'upper', 'lower', 'capitalize', or 'swapcase'.")
+        #     self.logger.log(f"Column '{column}' formatted as '{format}'.")
+        
+        # def format_date(self, column:str, format:str):
+        #     if self.none and self.data.empty:
+        #         raise ValueError("File is empty. Cannot format empty data.")
+        #     if column not in self.data.columns:
+        #         raise ValueError(f"Column '{column}' not found.")
+        #     if format == 'datetime':
+        #         self.data[column] = pd.to_datetime(self.data[column])
+        #     elif format == 'date':
+        #         self.data[column] = pd.to_datetime(self.data[column]).dt.date
+        #     elif format == 'time':
+        #         self.data[column] = pd.to_datetime(self.data[column]).dt.time
+        #     elif format == 'year':
+        #         self.data[column] = pd.to_datetime(self.data[column]).dt.year
+        #     elif format == 'month':
+        #         self.data[column] = pd.to_datetime(self.data[column]).dt.month
+        #     elif format == 'day':
+        #         self.data[column] = pd.to_datetime(self.data[column]).dt.day
+        #     elif format == 'hour':
+        #         self.data[column] = pd.to_datetime(self.data[column]).dt.hour
+        #     elif format == 'minute':
+        #         self.data[column] = pd.to_datetime(self.data[column]).dt.minute
+        #     elif format == 'second':
+        #         self.data[column] = pd.to_datetime(self.data[column]).dt.second
+        #     else:
+        #         raise ValueError("Invalid format. Use 'datetime', 'date', 'time', 'year', 'month', 'day', 'hour', 'minute', or 'second'.")
+        #     self.logger.log(f"Column '{column}' formatted as '{format}'.")
+
     class Plot:
         def __init__(self, csvprocessor: "CSVProcessor", uses: str = 'plotly.express'):
             """
@@ -412,6 +486,16 @@ class CSVProcessor:
                 raise Exception("File is empty. Or please use `CSVProcessor.get()` first.")
 
         def plot_line(self, x:str, y:str, title:str = None, x_title:str = None, y_title:str = None):
+            """
+            创建折线图
+            :param x: x轴数据列名
+            :param y: y轴数据列名
+            :param title: 图表标题
+            :param x_title: x轴标题
+            :param y_title: y轴标题
+            :versionadded: 0.4.0
+            :versionenhanced: 1.0.0
+            """
             self._empty_check()
             if self.none:
                 raise ValueError("File is empty. Cannot plot empty data.")
@@ -419,11 +503,86 @@ class CSVProcessor:
                 self.plot = px.line(self.data, x=x, y=y, title=title, labels={x: x_title, y: y_title})
             else:
                 self.ax.plot(self.data[x], self.data[y])
-                ptitle = "Line Plot of {y} vs {x}" if title is None else title
+                ptitle = f"Line Plot of {y} vs {x}" if title is None else title
                 self.ax.set_title(ptitle)
-                self.ax.set_xlabel(x)
-                self.ax.set_ylabel(y)
+                self.ax.set_xlabel(x_title if x_title else x)
+                self.ax.set_ylabel(y_title if y_title else y)
             self.logger.log(f"Line plot created for x={x}, y={y} using {self.use_lib} library.")
+
+        def plot_bar(self, x: str, y: str, title: str = None, x_title: str = None, y_title: str = None):
+            """
+            创建柱状图
+            :param x: x轴数据列名
+            :param y: y轴数据列名
+            :param title: 图表标题
+            :param x_title: x轴标题
+            :param y_title: y轴标题
+            :versionadded: 1.0.0
+            """
+            self._empty_check()
+            if self.none:
+                raise ValueError("File is empty. Cannot plot empty data.")
+            if self.use_lib == 'plotly.express':
+                self.plot = px.bar(self.data, x=x, y=y, title=title, labels={x: x_title, y: y_title})
+            else:
+                self.ax.bar(self.data[x], self.data[y])
+                ptitle = f"Bar Plot of {y} vs {x}" if title is None else title
+                self.ax.set_title(ptitle)
+                self.ax.set_xlabel(x_title if x_title else x)
+                self.ax.set_ylabel(y_title if y_title else y)
+            self.logger.log(f"Bar plot created for x={x}, y={y} using {self.use_lib} library.")
+
+        def plot_histogram(self, column: str, bins: int = None, title: str = None, x_title: str = None, y_title: str = "Count"):
+            """
+            创建直方图
+            :param column: 要创建直方图的数据列名
+            :param bins: 直方图的箱数
+            :param title: 图表标题
+            :param x_title: x轴标题
+            :param y_title: y轴标题
+            """
+            self._empty_check()
+            if self.none:
+                raise ValueError("File is empty. Cannot plot empty data.")
+            if self.use_lib == 'plotly.express':
+                self.plot = px.histogram(self.data, x=column, nbins=bins, title=title, 
+                                        labels={column: x_title if x_title else column})
+            else:
+                self.ax.hist(self.data[column], bins=bins)
+                ptitle = f"Histogram of {column}" if title is None else title
+                self.ax.set_title(ptitle)
+                self.ax.set_xlabel(x_title if x_title else column)
+                self.ax.set_ylabel(y_title)
+            self.logger.log(f"Histogram created for column={column} using {self.use_lib} library.")
+
+        def plot_scatter(self, x: str, y: str, color: str = None, title: str = None, x_title: str = None, y_title: str = None):
+            """
+            创建散点图
+            :param x: x轴数据列名
+            :param y: y轴数据列名
+            :param color: 用于区分点的颜色的列名（可选）
+            :param title: 图表标题
+            :param x_title: x轴标题
+            :param y_title: y轴标题
+            """
+            self._empty_check()
+            if self.none:
+                raise ValueError("File is empty. Cannot plot empty data.")
+            if self.use_lib == 'plotly.express':
+                self.plot = px.scatter(self.data, x=x, y=y, color=color, title=title,
+                                      labels={x: x_title if x_title else x, 
+                                             y: y_title if y_title else y})
+            else:
+                if color is None:
+                    self.ax.scatter(self.data[x], self.data[y])
+                else:
+                    scatter = self.ax.scatter(self.data[x], self.data[y], c=self.data[color])
+                    self.fig.colorbar(scatter, label=color)
+                ptitle = f"Scatter Plot of {y} vs {x}" if title is None else title
+                self.ax.set_title(ptitle)
+                self.ax.set_xlabel(x_title if x_title else x)
+                self.ax.set_ylabel(y_title if y_title else y)
+            self.logger.log(f"Scatter plot created for x={x}, y={y} using {self.use_lib} library.")
 
         def show(self):
             try:
@@ -438,11 +597,4 @@ class CSVProcessor:
             except Exception as e:
                 print(f"Error showing plot: {e}")
                 self.logger.log(f"Error showing plot: {e}")
-        
-        # Example Usage:
-        # csv = CSVProcessor('data.csv')
-        # csv.get()
-        # plot = csv.Plot(csv, uses='plotly.express')
-        # plot.plot_line('x', 'y', title='Line Plot', x_title='X-axis', y_title='Y-axis')
-        # plot.show()
             

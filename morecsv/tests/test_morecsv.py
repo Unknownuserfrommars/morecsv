@@ -12,7 +12,11 @@ class TestCSVProcessorAndPlot(unittest.TestCase):
     
     @patch('matplotlib.pyplot.show')  # Mock matplotlib's show method
     @patch('plotly.express.line')  # Mock Plotly's line function
-    def test_csv_processor_and_plot(self, mock_plotly_line, mock_matplotlib_show):
+    @patch('plotly.express.bar')  # Mock Plotly's bar function
+    @patch('plotly.express.histogram')  # Mock Plotly's histogram function
+    @patch('plotly.express.scatter')  # Mock Plotly's scatter function
+    def test_csv_processor_and_plot(self, mock_plotly_scatter, mock_plotly_histogram, 
+                                   mock_plotly_bar, mock_plotly_line, mock_matplotlib_show):
         # Create a mock CSV dataset as string
         csv_data = """x,y
 1,4
@@ -71,6 +75,69 @@ class TestCSVProcessorAndPlot(unittest.TestCase):
         # Assert Matplotlib plot.show() was called
         mock_matplotlib_show.assert_called_once()
         
+        # Reset matplotlib show mock
+        mock_matplotlib_show.reset_mock()
+
+        # Test plot_bar with Plotly
+        mock_plotly_bar_fig = MagicMock()
+        mock_plotly_bar.return_value = mock_plotly_bar_fig
+        plot.use_lib = 'plotly.express'
+        plot.plot_bar('x', 'y', title="Bar Plot", x_title="X-axis", y_title="Y-axis")
+        plot.show()
+        mock_plotly_bar_fig.show.assert_called_once()
+
+        # Test plot_bar with Matplotlib
+        plot.use_lib = 'matplotlib.pyplot'
+        plot.fig, plot.ax = plt.subplots()
+        plot.plot_bar('x', 'y', title="Bar Plot", x_title="X-axis", y_title="Y-axis")
+        plot.show()
+
+        # Reset matplotlib show mock
+        mock_matplotlib_show.reset_mock()
+
+        # Test plot_histogram with Plotly
+        mock_plotly_hist_fig = MagicMock()
+        mock_plotly_histogram.return_value = mock_plotly_hist_fig
+        plot.use_lib = 'plotly.express'
+        plot.plot_histogram('y', bins=5, title="Histogram", x_title="Values", y_title="Count")
+        plot.show()
+        mock_plotly_hist_fig.show.assert_called_once()
+
+        # Test plot_histogram with Matplotlib
+        plot.use_lib = 'matplotlib.pyplot'
+        plot.fig, plot.ax = plt.subplots()
+        plot.plot_histogram('y', bins=5, title="Histogram", x_title="Values", y_title="Count")
+        plot.show()
+
+        # Add a categorical column for scatter plot color testing
+        csv_processor.add_columns("category", rows=3)
+        csv_processor.fill_column("category", ['A', 'B', 'A'])
+
+        # Reset matplotlib show mock
+        mock_matplotlib_show.reset_mock()
+
+        # Test plot_scatter with Plotly
+        mock_plotly_scatter_fig = MagicMock()
+        mock_plotly_scatter.return_value = mock_plotly_scatter_fig
+        plot.use_lib = 'plotly.express'
+        plot.plot_scatter('x', 'y', color='category', title="Scatter Plot", x_title="X-axis", y_title="Y-axis")
+        plot.show()
+        mock_plotly_scatter_fig.show.assert_called_once()
+
+        # Test plot_scatter with Matplotlib
+        plot.use_lib = 'matplotlib.pyplot'
+        plot.fig, plot.ax = plt.subplots()
+        plot.plot_scatter('x', 'y', color='category', title="Scatter Plot", x_title="X-axis", y_title="Y-axis")
+        plot.show()
+        mock_matplotlib_show.assert_called_once()
+
+        # Test error handling for empty data
+        with self.assertRaises(ValueError):
+            empty_processor = CSVProcessor("empty.csv")
+            empty_processor.get()
+            empty_plot = empty_processor.Plot(empty_processor)
+            empty_plot.plot_bar('x', 'y')
+
         # Cleanup: Remove the test CSV file
         os.remove(csv_file_path)
 
